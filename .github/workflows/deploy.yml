@@ -1,141 +1,309 @@
-name: Build and deploy
+﻿name: Deploy
 
 on:
   workflow_dispatch:
     inputs:
+      image_tag:
+        description: GHCR image tag (latest or commit SHA)
+        required: true
+        default: latest
+        type: string
+
       deploy_docker:
-        description: Nasadit na Docker self-hosted runner
+        description: Deploy to Docker Compose
         required: true
         default: false
         type: boolean
+
       deploy_kubernetes:
-        description: Nasadit do Kubernetes
+        description: Deploy to Minikube
         required: true
         default: false
         type: boolean
+
       deploy_okd:
-        description: Nasadit do OKD
+        description: Deploy to OKD
         required: true
         default: false
         type: boolean
-  push:
-    branches: ["main"]
-    tags: ["v*"]
 
 permissions:
   contents: read
-  packages: write
-
-env:
-  REGISTRY: ghcr.io
+  packages: read
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest
-    outputs:
-      backend_image: ${{ steps.names.outputs.backend_image }}
-      frontend_image: ${{ steps.names.outputs.frontend_image }}
-    steps:
-      - uses: actions/checkout@v5
-      - name: Normalize image names
-        id: names
-        shell: bash
-        run: |
-          repository="${GITHUB_REPOSITORY,,}"
-          echo "backend_image=ghcr.io/${repository}-backend:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
-          echo "frontend_image=ghcr.io/${repository}-frontend:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
-        with:
-          context: backend
-          push: true
-          tags: ${{ steps.names.outputs.backend_image }}
-      - uses: docker/build-push-action@v6
-        with:
-          context: frontend
-          push: true
-          tags: ${{ steps.names.outputs.frontend_image }}
-
   deploy-docker:
-    needs: publish
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy_docker
-    runs-on: [self-hosted, docker]
-    environment: docker
+    if: inputs.deploy_docker
+    runs-on: [self-hosted, Windows, X64]
+
     steps:
       - uses: actions/checkout@v5
-      - name: Deploy with Docker Compose
+
+      - name: Prepare image names
+        id: images
+        shell: powershell
+        run: |
+          $repo = $env:GITHUB_REPOSITORY.ToLowerInvariant()
+          "backend=ghcr.io/$repo-backend:${{ inputs.image_tag }}" |
+            Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "frontend=ghcr.io/$repo-frontend:${{ inputs.image_tag }}" |
+            Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Login to GHCR
+        shell: powershell
+        run: |
+          "${{ secrets.GITHUB_TOKEN }}" |
+            docker login ghcr.io `
+              -u "${{ github.actor }}" `
+              --password-stdin
+
+      - name: Deploy Docker Compose
+        shell: powershell
         env:
-          BACKEND_IMAGE: ${{ needs.publish.outputs.backend_image }}
-          FRONTEND_IMAGE: ${{ needs.publish.outputs.frontend_image }}
-          APP_VERSION: ${{ github.sha }}
+          BACKEND_IMAGE: ${{ steps.images.outputs.backend }}
+          FRONTEND_IMAGE: ${{ steps.images.outputs.frontend }}
+          APP_VERSION: ${{ inputs.image_tag }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
           docker compose -f compose.prod.yaml pull
+
+          if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+          }
+
           docker compose -f compose.prod.yaml up -d --remove-orphans
-          ./scripts/smoke-test.sh http://localhost:8080
+
+          if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+          }
+
+          .\scripts\smoke-test.ps1 `
+            -BaseUrl "http://127.0.0.1:8080"
 
   deploy-kubernetes:
-    needs: publish
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy_kubernetes
-    runs-on: ubuntu-latest
-    environment: kubernetes
+    if: inputs.deploy_kubernetes
+    runs-on: [self-hosted, Windows, X64]
+
     steps:
       - uses: actions/checkout@v5
-      - name: Configure cluster access
+
+      - name: Prepare image names
+        id: images
+        shell: powershell
+        run: |
+          $repo = $env:GITHUB_REPOSITORY.ToLowerInvariant()
+          "backend=ghcr.io/$repo-backend:${{ inputs.image_tag }}" |
+            Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "frontend=ghcr.io/$repo-frontend:${{ inputs.image_tag }}" |
+            Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Login to GHCR
+        shell: powershell
+        run: |
+          "${{ secrets.GITHUB_TOKEN }}" |
+            docker login ghcr.io `
+              -u "${{ github.actor }}" `
+              --password-stdin
+
+      - name: Load images into Minikube
+        shell: powershell
+        run: |
+          docker pull "${{ steps.images.outputs.backend }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          docker pull "${{ steps.images.outputs.frontend }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          minikube image load "${{ steps.images.outputs.backend }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          minikube image load "${{ steps.images.outputs.frontend }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Deploy to Minikube
+        shell: powershell
         env:
-          KUBE_CONFIG_B64: ${{ secrets.KUBE_CONFIG_B64 }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         run: |
-          mkdir -p "$HOME/.kube"
-          echo "$KUBE_CONFIG_B64" | base64 --decode > "$HOME/.kube/config"
-          chmod 600 "$HOME/.kube/config"
-      - name: Install kubectl
-        env:
-          KUBECTL_VERSION: ${{ vars.KUBECTL_VERSION || 'v1.35.6' }}
-        run: |
-          curl --fail --location --output kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
-          sudo install -m 0755 kubectl /usr/local/bin/kubectl
-      - name: Set images and deploy
-        run: |
-          ./scripts/set-images.sh \
-            "${{ needs.publish.outputs.backend_image }}" \
-            "${{ needs.publish.outputs.frontend_image }}"
-          kubectl apply -k deploy/overlays/kubernetes
+          kubectl config use-context minikube
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          kubectl apply -f .\deploy\base\namespace.yaml
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          kubectl -n task-app create secret generic app-secrets `
+            --from-literal=POSTGRES_USER="$env:POSTGRES_USER" `
+            --from-literal=POSTGRES_PASSWORD="$env:POSTGRES_PASSWORD" `
+            --from-literal=POSTGRES_DB="$env:POSTGRES_DB" `
+            --dry-run=client `
+            -o yaml |
+            kubectl apply -f -
+
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          py .\scripts\set-images.py `
+            "${{ steps.images.outputs.backend }}" `
+            "${{ steps.images.outputs.frontend }}"
+
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          kubectl apply -k .\deploy\overlays\kubernetes
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
           kubectl -n task-app rollout status deployment/backend --timeout=180s
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
           kubectl -n task-app rollout status deployment/frontend --timeout=180s
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Smoke test Minikube
+        shell: powershell
+        run: |
+          $process = Start-Process `
+            -FilePath "kubectl" `
+            -ArgumentList @(
+              "-n", "task-app",
+              "port-forward",
+              "service/frontend",
+              "18081:8080"
+            ) `
+            -PassThru `
+            -WindowStyle Hidden
+
+          try {
+              Start-Sleep -Seconds 5
+
+              .\scripts\smoke-test.ps1 `
+                -BaseUrl "http://127.0.0.1:18081"
+          }
+          finally {
+              Stop-Process `
+                -Id $process.Id `
+                -Force `
+                -ErrorAction SilentlyContinue
+          }
 
   deploy-okd:
-    needs: publish
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy_okd
-    runs-on: ubuntu-latest
-    environment: okd
+    if: inputs.deploy_okd
+    runs-on: [self-hosted, Windows, X64]
+
     steps:
       - uses: actions/checkout@v5
-      - name: Configure cluster access
+
+      - name: Verify OKD connection
+        shell: powershell
+        run: |
+          oc `
+            --kubeconfig=C:\actions-runner\secrets\okd-kubeconfig `
+            whoami --show-server
+
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build backend in OKD
+        shell: powershell
+        run: |
+          oc `
+            --kubeconfig=C:\actions-runner\secrets\okd-kubeconfig `
+            -n task-app `
+            start-build backend `
+            --from-dir=.\backend `
+            --follow
+
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build frontend in OKD
+        shell: powershell
+        run: |
+          oc `
+            --kubeconfig=C:\actions-runner\secrets\okd-kubeconfig `
+            -n task-app `
+            start-build frontend `
+            --from-dir=.\frontend `
+            --follow
+
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Deploy to OKD
+        shell: powershell
         env:
-          OKD_KUBE_CONFIG_B64: ${{ secrets.OKD_KUBE_CONFIG_B64 }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         run: |
-          mkdir -p "$HOME/.kube"
-          echo "$OKD_KUBE_CONFIG_B64" | base64 --decode > "$HOME/.kube/config"
-          chmod 600 "$HOME/.kube/config"
-      - name: Install kubectl
-        env:
-          KUBECTL_VERSION: ${{ vars.KUBECTL_VERSION || 'v1.35.6' }}
+          $config = "C:\actions-runner\secrets\okd-kubeconfig"
+
+          oc --kubeconfig=$config apply -f .\deploy\base\namespace.yaml
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          oc --kubeconfig=$config `
+            -n task-app `
+            create secret generic app-secrets `
+            --from-literal=POSTGRES_USER="$env:POSTGRES_USER" `
+            --from-literal=POSTGRES_PASSWORD="$env:POSTGRES_PASSWORD" `
+            --from-literal=POSTGRES_DB="$env:POSTGRES_DB" `
+            --dry-run=client `
+            -o yaml |
+            oc --kubeconfig=$config apply -f -
+
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          oc --kubeconfig=$config apply -k .\deploy\overlays\okd
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          oc --kubeconfig=$config `
+            -n task-app `
+            rollout restart deployment/backend
+
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          oc --kubeconfig=$config `
+            -n task-app `
+            rollout restart deployment/frontend
+
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          oc --kubeconfig=$config `
+            -n task-app `
+            rollout status deployment/backend `
+            --timeout=180s
+
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          oc --kubeconfig=$config `
+            -n task-app `
+            rollout status deployment/frontend `
+            --timeout=180s
+
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Smoke test OKD
+        shell: powershell
         run: |
-          curl --fail --location --output kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
-          sudo install -m 0755 kubectl /usr/local/bin/kubectl
-      - name: Set images and deploy
-        run: |
-          ./scripts/set-images.sh \
-            "${{ needs.publish.outputs.backend_image }}" \
-            "${{ needs.publish.outputs.frontend_image }}"
-          kubectl apply -k deploy/overlays/okd
-          kubectl -n task-app rollout status deployment/backend --timeout=180s
-          kubectl -n task-app rollout status deployment/frontend --timeout=180s
+          $process = Start-Process `
+            -FilePath "oc" `
+            -ArgumentList @(
+              "--kubeconfig=C:\actions-runner\secrets\okd-kubeconfig",
+              "-n", "task-app",
+              "port-forward",
+              "service/frontend",
+              "18082:8080"
+            ) `
+            -PassThru `
+            -WindowStyle Hidden
+
+          try {
+              Start-Sleep -Seconds 5
+
+              .\scripts\smoke-test.ps1 `
+                -BaseUrl "http://127.0.0.1:18082"
+          }
+          finally {
+              Stop-Process `
+                -Id $process.Id `
+                -Force `
+                -ErrorAction SilentlyContinue
+          }

@@ -21,3 +21,6 @@ kubeconfig*
 pull-secret*
 kubeadmin-password
 registry-patch.json
+
+# Local test reports
+backend/pytest-report.xml

@@ -1,4 +1,4 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
+﻿apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 namespace: task-app
@@ -9,10 +9,12 @@ resources:
   - serviceaccount.yaml
   - postgres-pv.yaml
   - hpa.yaml
+
 patches:
   - path: backend-serviceaccount-patch.yaml
   - path: frontend-serviceaccount-patch.yaml
   - path: postgres-okd-patch.yaml
+
   - target:
       kind: ConfigMap
       name: app-config
@@ -20,6 +22,25 @@ patches:
       - op: replace
         path: /data/CORS_ORIGINS
         value: https://task-app.apps.okd.diploma.test
+
+  - target:
+      kind: Deployment
+      name: backend
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/initContainers/0/imagePullPolicy
+        value: Always
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
 
 images:
   - name: ghcr.io/owner/repository-backend

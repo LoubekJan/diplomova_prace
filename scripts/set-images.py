@@ -1,24 +1,31 @@
-from pathlib import Path
+﻿from pathlib import Path
 import re
 import sys
 
 if len(sys.argv) != 3:
-    raise SystemExit("Použití: set-images.py <backend-image> <frontend-image>")
+    raise SystemExit("Usage: set-images.py <backend-image> <frontend-image>")
 
 root = Path(__file__).resolve().parents[1]
+
 updates = {
-    root / "deploy/base/backend-deployment.yaml": sys.argv[1],
-    root / "deploy/base/frontend-deployment.yaml": sys.argv[2],
+    root / "deploy/base/backend-deployment.yaml": (
+        r"ghcr\.io/owner/repository-backend:[^\s]+",
+        sys.argv[1],
+    ),
+    root / "deploy/base/frontend-deployment.yaml": (
+        r"ghcr\.io/owner/repository-frontend:[^\s]+",
+        sys.argv[2],
+    ),
 }
 
-for path, image in updates.items():
+for path, (pattern, image) in updates.items():
     text = path.read_text(encoding="utf-8")
-    updated, count = re.subn(
-        r"(?m)^(\s*image:\s*)ghcr\.io/owner/repository-(?:backend|frontend):[^\s]+$",
-        rf"\g<1>{image}",
-        text,
-        count=1,
-    )
-    if count != 1:
-        raise SystemExit(f"V souboru {path} nebyl nalezen očekávaný image řádek.")
+
+    updated, count = re.subn(pattern, image, text)
+
+    if count == 0:
+        raise SystemExit(f"Expected image reference not found in {path}")
+
     path.write_text(updated, encoding="utf-8")
+
+    print(f"{path.name}: updated {count} image reference(s)")
