@@ -50,12 +50,11 @@ jobs:
             Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Login to GHCR
-        shell: powershell
-        run: |
-          "${{ secrets.GITHUB_TOKEN }}" |
-            docker login ghcr.io `
-              -u "${{ github.actor }}" `
-              --password-stdin
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy Docker Compose
         shell: powershell
@@ -100,12 +99,11 @@ jobs:
             Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Login to GHCR
-        shell: powershell
-        run: |
-          "${{ secrets.GITHUB_TOKEN }}" |
-            docker login ghcr.io `
-              -u "${{ github.actor }}" `
-              --password-stdin
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Load images into Minikube
         shell: powershell
