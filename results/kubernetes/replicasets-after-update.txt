@@ -1,0 +1,5 @@
+﻿NAME                 DESIRED   CURRENT   READY   AGE
+backend-56454fbc8b   0         0         0       21m
+backend-675fff9fdc   2         2         2       3m43s
+backend-6d489b9b55   0         0         0       37m
+frontend-d476d469    2         2         2       37m

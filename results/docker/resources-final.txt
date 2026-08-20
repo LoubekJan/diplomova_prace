@@ -1,0 +1,5 @@
+﻿CONTAINER ID   NAME                          CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O        PIDS
+e21ece90ac47   diploma-task-app-frontend-1   0.00%     11.54MiB / 7.491GiB   0.15%     872B / 126B       20.5kB / 4.1kB   15
+28cc63e18bb0   diploma-task-app-backend-1    0.44%     60.33MiB / 7.491GiB   0.79%     11.3kB / 11.4kB   0B / 0B          6
+61fdb41d2312   diploma-task-app-db-1         0.00%     42.05MiB / 7.491GiB   0.55%     66.3kB / 55.5kB   0B / 55MB        10
+

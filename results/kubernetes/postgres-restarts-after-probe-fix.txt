@@ -1,0 +1,4 @@
+﻿Restarty PostgreSQL před testem: 1
+Restarty PostgreSQL po testu: 1
+Nové restarty během testu: 0
+Výsledek: ÚSPĚŠNÝ

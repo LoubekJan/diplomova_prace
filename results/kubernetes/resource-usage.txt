@@ -1,0 +1,6 @@
+﻿NAME                       CPU(cores)   MEMORY(bytes)   
+backend-6d489b9b55-wgvrp   5m           60Mi            
+backend-6d489b9b55-xxnkl   6m           60Mi            
+frontend-d476d469-5dn24    1m           11Mi            
+frontend-d476d469-95llb    1m           11Mi            
+postgres-0                 11m          83Mi            

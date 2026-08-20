@@ -1,0 +1,38 @@
+﻿LAST SEEN   TYPE      REASON                  OBJECT                                  MESSAGE
+6m19s       Normal    SuccessfulCreate        replicaset/backend-6d489b9b55           Created pod: backend-6d489b9b55-wgvrp
+6m19s       Normal    ScalingReplicaSet       deployment/frontend                     Scaled up replica set frontend-d476d469 from 0 to 2
+6m19s       Normal    Scheduled               pod/backend-6d489b9b55-wgvrp            Successfully assigned task-app/backend-6d489b9b55-wgvrp to minikube
+6m19s       Normal    SuccessfulCreate        replicaset/frontend-d476d469            Created pod: frontend-d476d469-95llb
+6m19s       Normal    ScalingReplicaSet       deployment/backend                      Scaled up replica set backend-6d489b9b55 from 0 to 2
+6m19s       Normal    SuccessfulCreate        replicaset/backend-6d489b9b55           Created pod: backend-6d489b9b55-xxnkl
+6m19s       Normal    Scheduled               pod/backend-6d489b9b55-xxnkl            Successfully assigned task-app/backend-6d489b9b55-xxnkl to minikube
+6m18s       Normal    SuccessfulCreate        replicaset/frontend-d476d469            Created pod: frontend-d476d469-5dn24
+6m19s       Normal    Scheduled               pod/frontend-d476d469-95llb             Successfully assigned task-app/frontend-d476d469-95llb to minikube
+6m18s       Normal    SuccessfulCreate        statefulset/postgres                    Create Pod postgres-0 in StatefulSet postgres successful
+6m18s       Normal    SuccessfulCreate        statefulset/postgres                    Create Claim data-postgres-0 Pod postgres-0 in StatefulSet postgres success
+6m18s       Normal    Scheduled               pod/postgres-0                          Successfully assigned task-app/postgres-0 to minikube
+6m18s       Warning   FailedScheduling        pod/postgres-0                          0/1 nodes are available: pod has unbound immediate PersistentVolumeClaims. not found
+6m18s       Normal    Scheduled               pod/frontend-d476d469-5dn24             Successfully assigned task-app/frontend-d476d469-5dn24 to minikube
+6m18s       Normal    ProvisioningSucceeded   persistentvolumeclaim/data-postgres-0   Successfully provisioned volume pvc-7049b3e0-fdc0-4b80-947d-24e4df996a22
+6m18s       Normal    ExternalProvisioning    persistentvolumeclaim/data-postgres-0   Waiting for a volume to be created either by the external provisioner 'k8s.io/minikube-hostpath' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
+6m18s       Normal    Provisioning            persistentvolumeclaim/data-postgres-0   External provisioner is provisioning volume for claim "task-app/data-postgres-0"
+4m46s       Normal    Created                 pod/backend-6d489b9b55-wgvrp            Container created
+4m46s       Normal    Pulled                  pod/backend-6d489b9b55-xxnkl            Container image "ghcr.io/owner/repository-backend:latest" already present on machine and can be accessed by the pod
+6m17s       Normal    Pulled                  pod/frontend-d476d469-5dn24             Container image "ghcr.io/owner/repository-frontend:latest" already present on machine and can be accessed by the pod
+4m46s       Normal    Started                 pod/backend-6d489b9b55-xxnkl            Container started
+4m46s       Normal    Pulled                  pod/backend-6d489b9b55-wgvrp            Container image "ghcr.io/owner/repository-backend:latest" already present on machine and can be accessed by the pod
+4m46s       Normal    Created                 pod/backend-6d489b9b55-xxnkl            Container created
+6m16s       Normal    Started                 pod/frontend-d476d469-5dn24             Container started
+6m16s       Normal    Created                 pod/frontend-d476d469-95llb             Container created
+4m45s       Normal    Started                 pod/backend-6d489b9b55-wgvrp            Container started
+6m16s       Normal    Started                 pod/frontend-d476d469-95llb             Container started
+6m17s       Normal    Pulled                  pod/frontend-d476d469-95llb             Container image "ghcr.io/owner/repository-frontend:latest" already present on machine and can be accessed by the pod
+6m16s       Normal    Created                 pod/frontend-d476d469-5dn24             Container created
+6m16s       Normal    Pulling                 pod/postgres-0                          Pulling image "postgres:18-alpine"
+5m26s       Warning   Unhealthy               pod/backend-6d489b9b55-xxnkl            Startup probe failed: Get "http://10.244.120.68:8000/health/ready": dial tcp 10.244.120.68:8000: connect: connection refused
+5m26s       Warning   Unhealthy               pod/backend-6d489b9b55-wgvrp            Startup probe failed: Get "http://10.244.120.69:8000/health/ready": dial tcp 10.244.120.69:8000: connect: connection refused
+5m16s       Normal    Killing                 pod/backend-6d489b9b55-wgvrp            Container backend failed startup probe, will be restarted
+5m16s       Normal    Killing                 pod/backend-6d489b9b55-xxnkl            Container backend failed startup probe, will be restarted
+4m1s        Normal    Pulled                  pod/postgres-0                          Successfully pulled image "postgres:18-alpine" in 2m15.798s (2m15.798s including waiting). Image size: 303586565 bytes.
+4m          Normal    Created                 pod/postgres-0                          Container created
+4m          Normal    Started                 pod/postgres-0                          Container started

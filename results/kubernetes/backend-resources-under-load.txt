@@ -1,0 +1,7 @@
+﻿NAME                       CPU(cores)   MEMORY(bytes)   
+backend-56454fbc8b-7fd6n   279m         75Mi            
+backend-56454fbc8b-98srm   280m         73Mi            
+backend-56454fbc8b-k6n2n   282m         72Mi            
+backend-56454fbc8b-s7dfn   279m         73Mi            
+backend-56454fbc8b-thzdg   272m         73Mi            
+backend-56454fbc8b-ttjgv   283m         74Mi            

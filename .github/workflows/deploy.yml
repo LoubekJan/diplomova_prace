@@ -1,0 +1,141 @@
+name: Build and deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_docker:
+        description: Nasadit na Docker self-hosted runner
+        required: true
+        default: false
+        type: boolean
+      deploy_kubernetes:
+        description: Nasadit do Kubernetes
+        required: true
+        default: false
+        type: boolean
+      deploy_okd:
+        description: Nasadit do OKD
+        required: true
+        default: false
+        type: boolean
+  push:
+    branches: ["main"]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    outputs:
+      backend_image: ${{ steps.names.outputs.backend_image }}
+      frontend_image: ${{ steps.names.outputs.frontend_image }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Normalize image names
+        id: names
+        shell: bash
+        run: |
+          repository="${GITHUB_REPOSITORY,,}"
+          echo "backend_image=ghcr.io/${repository}-backend:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=ghcr.io/${repository}-frontend:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: true
+          tags: ${{ steps.names.outputs.backend_image }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          push: true
+          tags: ${{ steps.names.outputs.frontend_image }}
+
+  deploy-docker:
+    needs: publish
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_docker
+    runs-on: [self-hosted, docker]
+    environment: docker
+    steps:
+      - uses: actions/checkout@v5
+      - name: Deploy with Docker Compose
+        env:
+          BACKEND_IMAGE: ${{ needs.publish.outputs.backend_image }}
+          FRONTEND_IMAGE: ${{ needs.publish.outputs.frontend_image }}
+          APP_VERSION: ${{ github.sha }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker compose -f compose.prod.yaml pull
+          docker compose -f compose.prod.yaml up -d --remove-orphans
+          ./scripts/smoke-test.sh http://localhost:8080
+
+  deploy-kubernetes:
+    needs: publish
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_kubernetes
+    runs-on: ubuntu-latest
+    environment: kubernetes
+    steps:
+      - uses: actions/checkout@v5
+      - name: Configure cluster access
+        env:
+          KUBE_CONFIG_B64: ${{ secrets.KUBE_CONFIG_B64 }}
+        run: |
+          mkdir -p "$HOME/.kube"
+          echo "$KUBE_CONFIG_B64" | base64 --decode > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+      - name: Install kubectl
+        env:
+          KUBECTL_VERSION: ${{ vars.KUBECTL_VERSION || 'v1.35.6' }}
+        run: |
+          curl --fail --location --output kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+          sudo install -m 0755 kubectl /usr/local/bin/kubectl
+      - name: Set images and deploy
+        run: |
+          ./scripts/set-images.sh \
+            "${{ needs.publish.outputs.backend_image }}" \
+            "${{ needs.publish.outputs.frontend_image }}"
+          kubectl apply -k deploy/overlays/kubernetes
+          kubectl -n task-app rollout status deployment/backend --timeout=180s
+          kubectl -n task-app rollout status deployment/frontend --timeout=180s
+
+  deploy-okd:
+    needs: publish
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_okd
+    runs-on: ubuntu-latest
+    environment: okd
+    steps:
+      - uses: actions/checkout@v5
+      - name: Configure cluster access
+        env:
+          OKD_KUBE_CONFIG_B64: ${{ secrets.OKD_KUBE_CONFIG_B64 }}
+        run: |
+          mkdir -p "$HOME/.kube"
+          echo "$OKD_KUBE_CONFIG_B64" | base64 --decode > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+      - name: Install kubectl
+        env:
+          KUBECTL_VERSION: ${{ vars.KUBECTL_VERSION || 'v1.35.6' }}
+        run: |
+          curl --fail --location --output kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+          sudo install -m 0755 kubectl /usr/local/bin/kubectl
+      - name: Set images and deploy
+        run: |
+          ./scripts/set-images.sh \
+            "${{ needs.publish.outputs.backend_image }}" \
+            "${{ needs.publish.outputs.frontend_image }}"
+          kubectl apply -k deploy/overlays/okd
+          kubectl -n task-app rollout status deployment/backend --timeout=180s
+          kubectl -n task-app rollout status deployment/frontend --timeout=180s

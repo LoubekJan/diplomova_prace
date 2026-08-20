@@ -1,0 +1,65 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #eef2f7;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+button, input { font: inherit; }
+
+.shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+}
+
+.card {
+  width: min(760px, 100%);
+  background: white;
+  border-radius: 18px;
+  padding: clamp(24px, 5vw, 48px);
+  box-shadow: 0 18px 50px rgba(23, 32, 51, 0.12);
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #3159c6;
+}
+
+h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.2rem); }
+.intro { color: #5b6474; line-height: 1.6; max-width: 64ch; }
+.task-form { margin-top: 32px; }
+.task-form label { display: block; font-weight: 700; margin-bottom: 8px; }
+.form-row { display: flex; gap: 10px; }
+input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #cbd3df;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+input:focus { outline: 3px solid rgba(49, 89, 198, 0.18); border-color: #3159c6; }
+button { border: 0; border-radius: 10px; cursor: pointer; }
+.form-row button { background: #3159c6; color: white; padding: 12px 18px; font-weight: 700; }
+.summary { display: flex; gap: 18px; margin: 24px 0 12px; color: #5b6474; font-size: 0.92rem; }
+.task-list { padding: 0; margin: 0; list-style: none; display: grid; gap: 10px; }
+.task-list li { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 12px; border: 1px solid #e3e7ee; border-radius: 12px; }
+.check { width: 30px; height: 30px; border: 2px solid #8d98aa; background: white; color: white; font-weight: 800; }
+.done .check { background: #287c52; border-color: #287c52; }
+.done span { text-decoration: line-through; color: #7a8494; }
+.delete { background: transparent; color: #a02b2b; padding: 8px; }
+.error { color: #a02b2b; background: #fff0f0; border-radius: 8px; padding: 10px; }
+.empty { color: #7a8494; padding: 18px 0; }
+
+@media (max-width: 560px) {
+  .form-row { flex-direction: column; }
+  .task-list li { grid-template-columns: 34px 1fr; }
+  .delete { grid-column: 2; justify-self: start; padding-left: 0; }
+}

@@ -1,0 +1,126 @@
+﻿Name:             backend-56454fbc8b-cd2rv
+Namespace:        task-app
+Priority:         0
+Service Account:  default
+Node:             minikube/192.168.49.2
+Start Time:       Tue, 04 Aug 2026 20:03:51 +0200
+Labels:           app.kubernetes.io/managed-by=kustomize
+                  app.kubernetes.io/name=backend
+                  app.kubernetes.io/part-of=diploma-task-app
+                  pod-template-hash=56454fbc8b
+Annotations:      cni.projectcalico.org/containerID: dff2a6bbc20b0015fff349e5c6745bba0e16765fc108ec4b5b4c12c45d8a7717
+                  cni.projectcalico.org/podIP: 10.244.120.74/32
+                  cni.projectcalico.org/podIPs: 10.244.120.74/32
+Status:           Running
+SeccompProfile:   RuntimeDefault
+IP:               10.244.120.74
+IPs:
+  IP:           10.244.120.74
+Controlled By:  ReplicaSet/backend-56454fbc8b
+Init Containers:
+  wait-for-postgres:
+    Container ID:  docker://80261efa4256bed8f0271673864b21e5a2ac6e663412234e38dba9bc54946a25
+    Image:         ghcr.io/owner/repository-backend:latest
+    Image ID:      docker://sha256:8cf8facd2b161ffa7d1435e2a88e2b6444b2e74393bf4e31bd4d6dbf02d26874
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      python
+      -c
+      import socket
+      import time
+      
+      host = "postgres"
+      port = 5432
+      attempts = 90
+      
+      for attempt in range(1, attempts + 1):
+          try:
+              with socket.create_connection((host, port), timeout=2):
+                  print("PostgreSQL is reachable")
+                  raise SystemExit(0)
+          except OSError:
+              print(
+                  f"Waiting for PostgreSQL "
+                  f"({attempt}/{attempts})"
+              )
+              time.sleep(2)
+      
+      raise SystemExit(
+          "PostgreSQL was not reachable within 180 seconds"
+      )
+      
+    State:          Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Tue, 04 Aug 2026 20:03:52 +0200
+      Finished:     Tue, 04 Aug 2026 20:03:55 +0200
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     100m
+      memory:  64Mi
+    Requests:
+      cpu:        10m
+      memory:     32Mi
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9hj5f (ro)
+Containers:
+  backend:
+    Container ID:   docker://ef6293a2104d86ad160af439aaa200bee047feffce7b9b4edfdc0a8a30e137a6
+    Image:          ghcr.io/owner/repository-backend:latest
+    Image ID:       docker://sha256:8cf8facd2b161ffa7d1435e2a88e2b6444b2e74393bf4e31bd4d6dbf02d26874
+    Port:           8000/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Tue, 04 Aug 2026 20:03:56 +0200
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  512Mi
+    Requests:
+      cpu:      100m
+      memory:   128Mi
+    Liveness:   http-get http://:http/health/live delay=10s timeout=3s period=10s #success=1 #failure=3
+    Readiness:  http-get http://:http/health/ready delay=3s timeout=3s period=5s #success=1 #failure=3
+    Startup:    http-get http://:http/health/ready delay=0s timeout=1s period=2s #success=1 #failure=30
+    Environment Variables from:
+      app-config  ConfigMap  Optional: false
+    Environment:
+      POSTGRES_USER:      <set to the key 'POSTGRES_USER' in secret 'app-secrets'>      Optional: false
+      POSTGRES_PASSWORD:  <set to the key 'POSTGRES_PASSWORD' in secret 'app-secrets'>  Optional: false
+      POSTGRES_DB:        <set to the key 'POSTGRES_DB' in secret 'app-secrets'>        Optional: false
+      DATABASE_URL:       postgresql+psycopg://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9hj5f (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-9hj5f:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                    From               Message
+  ----     ------     ----                   ----               -------
+  Normal   Scheduled  7m47s                  default-scheduler  Successfully assigned task-app/backend-56454fbc8b-cd2rv to minikube
+  Normal   Pulled     7m46s                  kubelet            Container image "ghcr.io/owner/repository-backend:latest" already present on machine and can be accessed by the pod
+  Normal   Created    7m46s                  kubelet            Container created
+  Normal   Started    7m45s                  kubelet            Container started
+  Normal   Pulled     7m42s                  kubelet            Container image "ghcr.io/owner/repository-backend:latest" already present on machine and can be accessed by the pod
+  Normal   Created    7m42s                  kubelet            Container created
+  Normal   Started    7m42s                  kubelet            Container started
+  Warning  Unhealthy  7m37s (x3 over 7m41s)  kubelet            Startup probe failed: Get "http://10.244.120.74:8000/health/ready": dial tcp 10.244.120.74:8000: connect: connection refused

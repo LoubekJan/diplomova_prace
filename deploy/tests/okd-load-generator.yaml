@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: load-generator
+  namespace: task-app
+  labels:
+    app.kubernetes.io/name: load-generator
+spec:
+  restartPolicy: Never
+  containers:
+    - name: load
+      image: docker.io/library/busybox:1.36
+      command:
+        - /bin/sh
+        - -c
+      args:
+        - |
+          for i in 1 2 3 4 5 6 7 8; do
+            (
+              while true; do
+                wget -q -O /dev/null http://backend:8000/api/tasks || true
+              done
+            ) &
+          done
+          wait
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          cpu: "1"
+          memory: 128Mi

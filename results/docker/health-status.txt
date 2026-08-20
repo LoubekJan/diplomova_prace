@@ -1,0 +1,8 @@
+﻿
+Service  ContainerStatus HealthStatus StartedAt                      RestartCount
+-------  --------------- ------------ ---------                      ------------
+frontend running         healthy      2026-07-28T19:06:33.257650319Z            0
+backend  running         healthy      2026-07-28T19:05:05.668246702Z            0
+db       running         healthy      2026-07-28T18:46:18.554071796Z            0
+
+

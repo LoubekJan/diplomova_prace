@@ -1,0 +1,75 @@
+﻿LAST SEEN   TYPE      REASON                  OBJECT                                  MESSAGE
+29m         Normal    SuccessfulCreate        replicaset/frontend-d476d469            Created pod: frontend-d476d469-95llb
+29m         Normal    Scheduled               pod/backend-6d489b9b55-xxnkl            Successfully assigned task-app/backend-6d489b9b55-xxnkl to minikube
+29m         Normal    SuccessfulCreate        replicaset/backend-6d489b9b55           Created pod: backend-6d489b9b55-wgvrp
+29m         Normal    SuccessfulCreate        replicaset/backend-6d489b9b55           Created pod: backend-6d489b9b55-xxnkl
+29m         Normal    ScalingReplicaSet       deployment/backend                      Scaled up replica set backend-6d489b9b55 from 0 to 2
+29m         Normal    ScalingReplicaSet       deployment/frontend                     Scaled up replica set frontend-d476d469 from 0 to 2
+29m         Normal    Scheduled               pod/backend-6d489b9b55-wgvrp            Successfully assigned task-app/backend-6d489b9b55-wgvrp to minikube
+29m         Normal    Scheduled               pod/frontend-d476d469-95llb             Successfully assigned task-app/frontend-d476d469-95llb to minikube
+29m         Normal    SuccessfulCreate        replicaset/frontend-d476d469            Created pod: frontend-d476d469-5dn24
+29m         Normal    Scheduled               pod/frontend-d476d469-5dn24             Successfully assigned task-app/frontend-d476d469-5dn24 to minikube
+29m         Normal    ProvisioningSucceeded   persistentvolumeclaim/data-postgres-0   Successfully provisioned volume pvc-7049b3e0-fdc0-4b80-947d-24e4df996a22
+29m         Normal    Provisioning            persistentvolumeclaim/data-postgres-0   External provisioner is provisioning volume for claim "task-app/data-postgres-0"
+29m         Normal    ExternalProvisioning    persistentvolumeclaim/data-postgres-0   Waiting for a volume to be created either by the external provisioner 'k8s.io/minikube-hostpath' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
+29m         Warning   FailedScheduling        pod/postgres-0                          0/1 nodes are available: pod has unbound immediate PersistentVolumeClaims. not found
+29m         Normal    Scheduled               pod/postgres-0                          Successfully assigned task-app/postgres-0 to minikube
+29m         Normal    SuccessfulCreate        statefulset/postgres                    Create Claim data-postgres-0 Pod postgres-0 in StatefulSet postgres success
+29m         Normal    SuccessfulCreate        statefulset/postgres                    Create Pod postgres-0 in StatefulSet postgres successful
+27m         Normal    Pulled                  pod/backend-6d489b9b55-xxnkl            Container image "ghcr.io/owner/repository-backend:latest" already present on machine and can be accessed by the pod
+27m         Normal    Created                 pod/backend-6d489b9b55-wgvrp            Container created
+29m         Normal    Pulled                  pod/frontend-d476d469-5dn24             Container image "ghcr.io/owner/repository-frontend:latest" already present on machine and can be accessed by the pod
+27m         Normal    Started                 pod/backend-6d489b9b55-xxnkl            Container started
+27m         Normal    Created                 pod/backend-6d489b9b55-xxnkl            Container created
+27m         Normal    Pulled                  pod/backend-6d489b9b55-wgvrp            Container image "ghcr.io/owner/repository-backend:latest" already present on machine and can be accessed by the pod
+29m         Normal    Pulling                 pod/postgres-0                          Pulling image "postgres:18-alpine"
+29m         Normal    Started                 pod/frontend-d476d469-95llb             Container started
+29m         Normal    Created                 pod/frontend-d476d469-95llb             Container created
+29m         Normal    Pulled                  pod/frontend-d476d469-95llb             Container image "ghcr.io/owner/repository-frontend:latest" already present on machine and can be accessed by the pod
+29m         Normal    Started                 pod/frontend-d476d469-5dn24             Container started
+29m         Normal    Created                 pod/frontend-d476d469-5dn24             Container created
+27m         Normal    Started                 pod/backend-6d489b9b55-wgvrp            Container started
+28m         Warning   Unhealthy               pod/backend-6d489b9b55-wgvrp            Startup probe failed: Get "http://10.244.120.69:8000/health/ready": dial tcp 10.244.120.69:8000: connect: connection refused
+28m         Warning   Unhealthy               pod/backend-6d489b9b55-xxnkl            Startup probe failed: Get "http://10.244.120.68:8000/health/ready": dial tcp 10.244.120.68:8000: connect: connection refused
+28m         Normal    Killing                 pod/backend-6d489b9b55-wgvrp            Container backend failed startup probe, will be restarted
+28m         Normal    Killing                 pod/backend-6d489b9b55-xxnkl            Container backend failed startup probe, will be restarted
+26m         Normal    Pulled                  pod/postgres-0                          Successfully pulled image "postgres:18-alpine" in 2m15.798s (2m15.798s including waiting). Image size: 303586565 bytes.
+26m         Normal    Started                 pod/postgres-0                          Container started
+26m         Normal    Created                 pod/postgres-0                          Container created
+13m         Normal    ScalingReplicaSet       deployment/backend                      Scaled up replica set backend-56454fbc8b from 0 to 1
+13m         Normal    Scheduled               pod/backend-56454fbc8b-v84zv            Successfully assigned task-app/backend-56454fbc8b-v84zv to minikube
+13m         Normal    SuccessfulCreate        replicaset/backend-56454fbc8b           Created pod: backend-56454fbc8b-v84zv
+12m         Normal    Pulled                  pod/backend-56454fbc8b-v84zv            Container image "ghcr.io/owner/repository-backend:latest" already present on machine and can be accessed by the pod
+12m         Normal    Created                 pod/backend-56454fbc8b-v84zv            Container created
+12m         Normal    Started                 pod/backend-56454fbc8b-v84zv            Container started
+12m         Normal    Pulled                  pod/backend-56454fbc8b-v84zv            Container image "ghcr.io/owner/repository-backend:latest" already present on machine and can be accessed by the pod
+12m         Normal    Started                 pod/backend-56454fbc8b-v84zv            Container started
+12m         Normal    Created                 pod/backend-56454fbc8b-v84zv            Container created
+12m         Warning   Unhealthy               pod/backend-56454fbc8b-v84zv            Startup probe failed: Get "http://10.244.120.73:8000/health/ready": dial tcp 10.244.120.73:8000: connect: connection refused
+12m         Normal    SuccessfulCreate        replicaset/backend-56454fbc8b           Created pod: backend-56454fbc8b-cd2rv
+12m         Normal    SuccessfulDelete        replicaset/backend-6d489b9b55           Deleted pod: backend-6d489b9b55-wgvrp
+12m         Normal    Killing                 pod/backend-6d489b9b55-wgvrp            Stopping container backend
+12m         Normal    ScalingReplicaSet       deployment/backend                      Scaled down replica set backend-6d489b9b55 from 2 to 1
+12m         Normal    ScalingReplicaSet       deployment/backend                      Scaled up replica set backend-56454fbc8b from 1 to 2
+12m         Normal    Scheduled               pod/backend-56454fbc8b-cd2rv            Successfully assigned task-app/backend-56454fbc8b-cd2rv to minikube
+12m         Normal    Created                 pod/backend-56454fbc8b-cd2rv            Container created
+12m         Normal    Pulled                  pod/backend-56454fbc8b-cd2rv            Container image "ghcr.io/owner/repository-backend:latest" already present on machine and can be accessed by the pod
+12m         Normal    Started                 pod/backend-56454fbc8b-cd2rv            Container started
+12m         Warning   Unhealthy               pod/backend-6d489b9b55-wgvrp            Readiness probe failed: Get "http://10.244.120.69:8000/health/ready": dial tcp 10.244.120.69:8000: connect: connection refused
+12m         Normal    Created                 pod/backend-56454fbc8b-cd2rv            Container created
+12m         Normal    Pulled                  pod/backend-56454fbc8b-cd2rv            Container image "ghcr.io/owner/repository-backend:latest" already present on machine and can be accessed by the pod
+12m         Normal    Started                 pod/backend-56454fbc8b-cd2rv            Container started
+12m         Warning   Unhealthy               pod/backend-56454fbc8b-cd2rv            Startup probe failed: Get "http://10.244.120.74:8000/health/ready": dial tcp 10.244.120.74:8000: connect: connection refused
+12m         Normal    ScalingReplicaSet       deployment/backend                      Scaled down replica set backend-6d489b9b55 from 1 to 0
+12m         Normal    Killing                 pod/backend-6d489b9b55-xxnkl            Stopping container backend
+12m         Normal    SuccessfulDelete        replicaset/backend-6d489b9b55           Deleted pod: backend-6d489b9b55-xxnkl
+3m10s       Normal    SuccessfulCreate        replicaset/backend-56454fbc8b           Created pod: backend-56454fbc8b-nrs64
+3m10s       Normal    Scheduled               pod/backend-56454fbc8b-nrs64            Successfully assigned task-app/backend-56454fbc8b-nrs64 to minikube
+3m10s       Normal    Killing                 pod/backend-56454fbc8b-cd2rv            Stopping container backend
+3m9s        Normal    Pulled                  pod/backend-56454fbc8b-nrs64            Container image "ghcr.io/owner/repository-backend:latest" already present on machine and can be accessed by the pod
+3m9s        Normal    Created                 pod/backend-56454fbc8b-nrs64            Container created
+3m8s        Normal    Started                 pod/backend-56454fbc8b-nrs64            Container started
+3m5s        Normal    Created                 pod/backend-56454fbc8b-nrs64            Container created
+3m5s        Normal    Started                 pod/backend-56454fbc8b-nrs64            Container started
+3m5s        Normal    Pulled                  pod/backend-56454fbc8b-nrs64            Container image "ghcr.io/owner/repository-backend:latest" already present on machine and can be accessed by the pod
+3m          Warning   Unhealthy               pod/backend-56454fbc8b-nrs64            Startup probe failed: Get "http://10.244.120.75:8000/health/ready": dial tcp 10.244.120.75:8000: connect: connection refused

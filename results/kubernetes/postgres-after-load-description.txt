@@ -1,0 +1,83 @@
+﻿Name:             postgres-0
+Namespace:        task-app
+Priority:         0
+Service Account:  default
+Node:             minikube/192.168.49.2
+Start Time:       Tue, 04 Aug 2026 20:17:18 +0200
+Labels:           app.kubernetes.io/managed-by=kustomize
+                  app.kubernetes.io/name=postgres
+                  app.kubernetes.io/part-of=diploma-task-app
+                  apps.kubernetes.io/pod-index=0
+                  controller-revision-hash=postgres-578664b544
+                  statefulset.kubernetes.io/pod-name=postgres-0
+Annotations:      cni.projectcalico.org/containerID: 771ad198a563000757bb9f5ad10177b5afbc54e996d805b85acdec17680aae36
+                  cni.projectcalico.org/podIP: 10.244.120.76/32
+                  cni.projectcalico.org/podIPs: 10.244.120.76/32
+Status:           Running
+IP:               10.244.120.76
+IPs:
+  IP:           10.244.120.76
+Controlled By:  StatefulSet/postgres
+Containers:
+  postgres:
+    Container ID:   docker://a32dd1228b548037c73efe14342dc4ff771eacfb6410011340fbb80adef611f2
+    Image:          postgres:18-alpine
+    Image ID:       docker-pullable://postgres@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15
+    Port:           5432/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Tue, 04 Aug 2026 21:19:35 +0200
+    Last State:     Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Tue, 04 Aug 2026 21:17:04 +0200
+      Finished:     Tue, 04 Aug 2026 21:19:33 +0200
+    Ready:          True
+    Restart Count:  2
+    Limits:
+      cpu:     750m
+      memory:  1Gi
+    Requests:
+      cpu:      100m
+      memory:   256Mi
+    Liveness:   exec [sh -c pg_isready -U $POSTGRES_USER -d $POSTGRES_DB] delay=20s timeout=1s period=10s #success=1 #failure=3
+    Readiness:  exec [sh -c pg_isready -U $POSTGRES_USER -d $POSTGRES_DB] delay=5s timeout=1s period=5s #success=1 #failure=3
+    Environment:
+      POSTGRES_USER:      <set to the key 'POSTGRES_USER' in secret 'app-secrets'>      Optional: false
+      POSTGRES_PASSWORD:  <set to the key 'POSTGRES_PASSWORD' in secret 'app-secrets'>  Optional: false
+      POSTGRES_DB:        <set to the key 'POSTGRES_DB' in secret 'app-secrets'>        Optional: false
+    Mounts:
+      /var/lib/postgresql from data (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-mfzcq (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  data:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  data-postgres-0
+    ReadOnly:   false
+  kube-api-access-mfzcq:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                     From     Message
+  ----     ------     ----                    ----     -------
+  Warning  Unhealthy  8m7s                    kubelet  Readiness probe errored and resulted in unknown state: rpc error: code = Unknown desc = container not running (2f45b3efff6b1f8d0f3fe96b8fd09aecf4c85c6adbf9c2f5461392410870d9a5)
+  Warning  Unhealthy  6m10s (x17 over 9m43s)  kubelet  Readiness probe failed: command timed out: "sh -c pg_isready -U $POSTGRES_USER -d $POSTGRES_DB" timed out after 1s
+  Normal   Killing    5m41s (x2 over 8m11s)   kubelet  Container postgres failed liveness probe, will be restarted
+  Normal   Pulled     5m36s (x3 over 67m)     kubelet  Container image "postgres:18-alpine" already present on machine and can be accessed by the pod
+  Normal   Created    5m36s (x3 over 67m)     kubelet  Container created
+  Normal   Started    5m34s (x3 over 67m)     kubelet  Container started
+  Warning  Unhealthy  4m41s (x11 over 9m21s)  kubelet  Liveness probe failed: command timed out: "sh -c pg_isready -U $POSTGRES_USER -d $POSTGRES_DB" timed out after 1s

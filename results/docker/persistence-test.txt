@@ -1,0 +1,1 @@
+﻿Úkol zachován po docker compose down/up: ANO
