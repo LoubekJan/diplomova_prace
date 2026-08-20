@@ -63,7 +63,9 @@ def readiness(db: DbSession) -> dict[str, str]:
 @app.get("/metrics", response_class=PlainTextResponse, tags=["monitoring"])
 def metrics(db: DbSession) -> str:
     total = db.scalar(select(func.count()).select_from(Task)) or 0
-    completed = db.scalar(select(func.count()).select_from(Task).where(Task.completed.is_(True))) or 0
+    completed = (
+        db.scalar(select(func.count()).select_from(Task).where(Task.completed.is_(True))) or 0
+    )
     return (
         "# HELP task_app_info Static application information.\n"
         "# TYPE task_app_info gauge\n"
