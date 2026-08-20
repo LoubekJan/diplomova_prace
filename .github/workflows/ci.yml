@@ -26,7 +26,7 @@ jobs:
         run: ruff check backend
       - name: Tests
         working-directory: backend
-        run: pytest -q --junitxml=pytest-report.xml
+        run: python -m pytest -q --junitxml=pytest-report.xml
       - name: Upload test report
         if: always()
         uses: actions/upload-artifact@v4
@@ -60,3 +60,4 @@ jobs:
         run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --exit-code 1 --severity CRITICAL diploma-backend:${{ github.sha }}
       - name: Scan frontend image
         run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --exit-code 1 --severity CRITICAL diploma-frontend:${{ github.sha }}
+
