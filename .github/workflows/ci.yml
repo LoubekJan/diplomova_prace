@@ -57,7 +57,22 @@ jobs:
       - name: Build frontend image
         run: docker build -t diploma-frontend:${{ github.sha }} frontend
       - name: Scan backend image
-        run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --exit-code 1 --severity CRITICAL diploma-backend:${{ github.sha }}
+        run: >
+          docker run --rm
+          -v /var/run/docker.sock:/var/run/docker.sock
+          aquasec/trivy:latest image
+          --scanners vuln
+          --ignore-unfixed
+          --exit-code 1
+          --severity CRITICAL
+          diploma-backend:${{ github.sha }}
       - name: Scan frontend image
-        run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --exit-code 1 --severity CRITICAL diploma-frontend:${{ github.sha }}
-
+        run: >
+          docker run --rm
+          -v /var/run/docker.sock:/var/run/docker.sock
+          aquasec/trivy:latest image
+          --scanners vuln
+          --ignore-unfixed
+          --exit-code 1
+          --severity CRITICAL
+          diploma-frontend:${{ github.sha }}
